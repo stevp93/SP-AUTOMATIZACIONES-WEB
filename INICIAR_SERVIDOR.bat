@@ -8,10 +8,13 @@ echo   SP AUTOMATIZACIONES - Servidor local
 echo ============================================================
 echo.
 echo  Carpeta: %CD%
-echo  URL:     http://localhost:8000/sp_automatizaciones.html
+echo  URL:     http://localhost:8000/index.html
+echo.
+echo  Paginas: index.html / servicios.html / casos.html
+echo           nosotros.html / contacto.html
 echo.
 echo  Abriendo navegador...
-start "" "http://localhost:8000/sp_automatizaciones.html"
+start "" "http://localhost:8000/index.html"
 
 echo.
 echo  Iniciando servidor Python en puerto 8000
