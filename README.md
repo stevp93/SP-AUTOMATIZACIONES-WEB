@@ -44,16 +44,16 @@ Para cambiar la escena de una página basta con cambiar ese atributo.
 - Navegación por teclado, `aria-current`, enlace de salto al contenido,
   foco visible y errores de formulario con causa + solución.
 
+## Contacto configurado
+
+WhatsApp **+57 304 523 5480** (`wa.me/573045235480`) en los 5 HTML.
+Para cambiarlo: `sed -i 's/573045235480/57<nuevo>/g' *.html`
+
 ## Pendientes de configuración
 
-1. **Número de WhatsApp** — hoy es un marcador de posición `573XXXXXXXXX`.
-   Reemplázalo en los 5 HTML:
-   ```
-   sed -i 's/573XXXXXXXXX/57<tu-numero>/g' *.html
-   ```
-2. **Correo** — `contacto@spautomatizaciones.com` aparece en el pie y en
+1. **Correo** — `contacto@spautomatizaciones.com` aparece en el pie y en
    `contacto.html`; cámbialo si el dominio real es otro.
-3. **Formulario** — hoy simula el envío. En `assets/js/site.js`, dentro del
+2. **Formulario** — hoy simula el envío. En `assets/js/site.js`, dentro del
    handler `submit`, sustituye el `setTimeout` marcado con `TODO backend`
    por un `fetch()` a tu endpoint (Formspree, n8n webhook, API propia…).
-4. **Imagen Open Graph** — añade `og:image` en el `<head>` cuando tengas el arte.
+3. **Imagen Open Graph** — añade `og:image` en el `<head>` cuando tengas el arte.
