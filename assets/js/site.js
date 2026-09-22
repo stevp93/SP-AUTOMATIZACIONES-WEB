@@ -240,6 +240,13 @@
         body: JSON.stringify(data)
       });
       if (!res.ok) throw new Error('HTTP ' + res.status);
+
+      // Apps Script responde siempre 200, también al rechazar: el veredicto
+      // real va en el cuerpo como {ok:false}. Si la respuesta no es JSON
+      // (otros servicios), basta con el 200.
+      let json = null;
+      try { json = await res.json(); } catch (_) { /* sin JSON */ }
+      if (json && json.ok === false) throw new Error('rechazado: ' + (json.error || '?'));
     }
 
     form.addEventListener('submit', async (e) => {

@@ -75,10 +75,9 @@ Para regenerar los iconos tras cambiar el logo, hay que reescalar
 
 ## Pendientes de configuración
 
-1. **Formulario** — el envío ya está implementado, pero arranca en modo
-   `demo`: muestra la confirmación sin mandar nada a ningún lado.
-   Para activarlo, edita `FORM_CONFIG` en `assets/js/site.js` siguiendo
-   **[INTEGRACIONES.md](INTEGRACIONES.md)**, que explica paso a paso las
-   tres opciones (Formulario de Google, Apps Script o webhook de n8n) y
-   cómo recibir el aviso en el móvil por Telegram o correo.
-   Mientras siga en `demo`, **las solicitudes no llegan a ningún lado**.
+1. **Formulario** — el receptor ya está escrito y probado:
+   [`integraciones/formulario-telegram.gs`](integraciones/formulario-telegram.gs)
+   (Apps Script: guarda en una hoja de Google y avisa por Telegram).
+   Falta montarlo en tu cuenta siguiendo **[INTEGRACIONES.md](INTEGRACIONES.md)**
+   y pegar la URL `/exec` en `FORM_CONFIG` de `assets/js/site.js`.
+   Mientras siga en `mode: 'demo'`, **las solicitudes no llegan a ningún lado**.

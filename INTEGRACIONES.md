@@ -1,244 +1,158 @@
-# Conectar el formulario y recibir avisos en el móvil
+# Formulario → Hoja de cálculo + aviso en Telegram
 
-El formulario de `contacto.html` ya está preparado. Solo hay que decirle
-**a dónde** enviar los datos, en `assets/js/site.js`, en el bloque
-`FORM_CONFIG` (arriba de la sección 9).
+Cada solicitud de `contacto.html` se guarda en una hoja de Google y te
+llega al móvil como mensaje de Telegram. Todo corre en los servidores de
+Google: **no depende de que tengas ningún servidor encendido**.
 
-```js
-const FORM_CONFIG = {
-  mode: 'demo',          // <-- cámbialo
-  googleFormId: '',
-  entries: { name: '', company: '', email: '', phone: '', need: '' },
-  endpointUrl: ''
-};
+```
+ Web (contacto.html)  ──POST──►  Apps Script  ──►  Hoja de cálculo
+                                      │
+                                      └──────────►  Telegram (tu móvil)
 ```
 
-Hay dos caminos. Los dos son gratis y los dos avisan al móvil.
+Tiempo total: unos 20 minutos. Coste: cero.
+
+> **Seguridad:** el token de Telegram se pega **solo** en el editor de
+> Apps Script, dentro de tu cuenta de Google. Nunca en este repositorio
+> ni en la web — el repositorio es público.
 
 ---
 
-## Camino A — Formulario de Google (más rápido, ~15 min)
+## Paso 1 — Crear el bot de Telegram (3 min)
 
-Las respuestas caen en una hoja de cálculo y Google te manda un correo
-por cada una. Con la app de Gmail instalada, ese correo **ya es una
-notificación en el móvil**.
+1. En Telegram busca **@BotFather** (tiene la marca azul de verificado).
+2. Escríbele `/newbot`.
+3. Te pide un **nombre** (lo que ves en el chat), por ejemplo
+   `SP Solicitudes`.
+4. Te pide un **usuario**, que debe terminar en `bot`, por ejemplo
+   `sp_solicitudes_bot`.
+5. Te responde con un **token** parecido a
+   `7123456789:AAHfd8s...`. Cópialo; lo usas en el paso 3.
+6. Abre tu bot nuevo (BotFather te deja el enlace) y escríbele
+   **`hola`**. Sin ese primer mensaje el bot no puede escribirte.
 
-### A1. Crear el formulario
+## Paso 2 — Crear la hoja y pegar el script (3 min)
 
-1. Entra a <https://forms.google.com> y crea un formulario en blanco.
-2. Añade **cinco preguntas de respuesta corta**, en este orden y con
-   estos títulos (el título es libre, pero así no te confundes):
-
-   | # | Pregunta   | Tipo            |
-   |---|------------|-----------------|
-   | 1 | Nombre     | Respuesta corta |
-   | 2 | Empresa    | Respuesta corta |
-   | 3 | Correo     | Respuesta corta |
-   | 4 | Teléfono   | Respuesta corta |
-   | 5 | Necesidad  | Párrafo         |
-
-   Ninguna debe ser obligatoria: la validación ya la hace la web.
-
-### A2. Sacar los identificadores
-
-1. Pulsa **Enviar** → pestaña del eslabón (🔗) → copia el enlace.
-   Se parece a:
-   `https://docs.google.com/forms/d/e/1FAIpQLSd...AbCdEf/viewform`
-   El tramo entre `/e/` y `/viewform` es tu **`googleFormId`**.
-2. Abre el formulario publicado en el navegador, haz clic derecho →
-   **Ver código fuente de la página** y busca `entry.`
-   Verás algo como `entry.1234567890`, uno por pregunta, en el mismo
-   orden en que las creaste.
-
-   > Atajo: en el menú ⋮ del formulario elige **Obtener enlace
-   > autocompletado**, rellena cada campo con su propio nombre
-   > ("Nombre", "Empresa"…) y envía. El enlace que te da lleva los
-   > `entry.XXXX=Nombre` emparejados, sin tener que leer código.
-
-### A3. Configurar la web
-
-```js
-const FORM_CONFIG = {
-  mode: 'google-forms',
-  googleFormId: '1FAIpQLSd...AbCdEf',
-  entries: {
-    name:    'entry.1111111111',
-    company: 'entry.2222222222',
-    email:   'entry.3333333333',
-    phone:   'entry.4444444444',
-    need:    'entry.5555555555'
-  },
-  endpointUrl: ''
-};
-```
-
-### A4. Activar el aviso al móvil
-
-En el formulario: pestaña **Respuestas** → menú ⋮ →
-**Recibir notificaciones por correo de nuevas respuestas**.
-
-Instala **Gmail** en el móvil con esa cuenta y activa sus notificaciones.
-Cada solicitud te llegará como aviso al instante.
-
-### Límite honesto de este camino
-
-Google no permite que una web ajena lea su respuesta (no envía cabeceras
-CORS). El envío **sí llega**, pero el navegador no nos deja comprobarlo:
-la web muestra "¡Solicitud recibida!" sin poder confirmar que Google la
-aceptó. Solo detectamos caídas de red. Si quieres confirmación real, usa
-el camino B.
-
----
-
-## Camino B — Apps Script (recomendado, ~25 min)
-
-Mismo coste (cero) y sin los límites de arriba: la web **sí** confirma
-que el dato se guardó, y el aviso al móvil puede ser un mensaje de
-**Telegram**, que llega más rápido y se ve mejor que un correo.
-
-### B1. Crear la hoja y el script
-
-1. Crea una hoja de cálculo nueva en <https://sheets.google.com>.
+1. Ve a <https://sheets.google.com> y crea una hoja en blanco.
+   Llámala, por ejemplo, `Solicitudes web`.
 2. Menú **Extensiones → Apps Script**.
-3. Borra lo que haya y pega esto:
+3. Borra todo lo que haya en el editor.
+4. Pega el contenido completo de
+   **[`integraciones/formulario-telegram.gs`](integraciones/formulario-telegram.gs)**.
+5. Pulsa 💾 **Guardar**.
+
+## Paso 3 — Conectar el bot (5 min)
+
+Arriba del script está el bloque de configuración:
 
 ```javascript
-// Pega aquí los datos de tu bot de Telegram (ver paso B3).
-// Déjalos vacíos si prefieres recibir solo el correo.
-const TELEGRAM_TOKEN = '';
+const TELEGRAM_TOKEN   = '';
 const TELEGRAM_CHAT_ID = '';
-
-// Si quieres además un correo, pon tu dirección. Vacío = sin correo.
-const CORREO_AVISO = '';
-
-function doPost(e) {
-  try {
-    const d = JSON.parse(e.postData.contents);
-
-    SpreadsheetApp.getActiveSheet().appendRow([
-      new Date(), d.name, d.company, d.email, d.phone, d.need, d.origen
-    ]);
-
-    const texto =
-      '🔔 Nueva solicitud en SP Automatizaciones\n\n' +
-      'Nombre: '   + d.name    + '\n' +
-      'Empresa: '  + d.company + '\n' +
-      'Correo: '   + d.email   + '\n' +
-      'Teléfono: ' + (d.phone || '—') + '\n\n' +
-      'Necesita:\n' + d.need;
-
-    if (TELEGRAM_TOKEN && TELEGRAM_CHAT_ID) {
-      UrlFetchApp.fetch(
-        'https://api.telegram.org/bot' + TELEGRAM_TOKEN + '/sendMessage',
-        {
-          method: 'post',
-          payload: { chat_id: TELEGRAM_CHAT_ID, text: texto },
-          muteHttpExceptions: true
-        }
-      );
-    }
-
-    if (CORREO_AVISO) {
-      MailApp.sendEmail(CORREO_AVISO, 'Nueva solicitud: ' + d.company, texto);
-    }
-
-    return responder({ ok: true });
-  } catch (err) {
-    return responder({ ok: false, error: String(err) });
-  }
-}
-
-function responder(obj) {
-  return ContentService
-    .createTextOutput(JSON.stringify(obj))
-    .setMimeType(ContentService.MimeType.JSON);
-}
 ```
 
-### B2. Publicarlo
+1. Pega el **token** del paso 1 entre las comillas de `TELEGRAM_TOKEN`.
+   Guarda.
+2. En el desplegable de funciones (arriba, junto a ▶ Ejecutar) elige
+   **`obtenerChatId`** y pulsa **▶ Ejecutar**.
+   - La primera vez Google pide permisos: **Revisar permisos** → tu
+     cuenta → *Configuración avanzada* → *Ir a (proyecto)* → **Permitir**.
+     Aparece el aviso de "app no verificada" porque el script es tuyo y
+     nadie más lo ha revisado; es normal.
+3. En el **Registro de ejecución** verás:
+   `✅ Chat id: 123456789`
+   Copia ese número en `TELEGRAM_CHAT_ID`. Guarda.
+4. Elige **`probarTelegram`** y ejecútalo.
+   **Te debe llegar un mensaje al móvil.** Si llega, el bot está listo.
 
-**Implementar → Nueva implementación → Aplicación web**
+## Paso 4 — Publicar el script (3 min)
 
-- *Ejecutar como*: **Yo**
-- *Quién tiene acceso*: **Cualquier usuario**  ← imprescindible
+1. Arriba a la derecha: **Implementar → Nueva implementación**.
+2. En el engranaje ⚙️ junto a "Seleccionar tipo" elige
+   **Aplicación web**.
+3. Configura:
+   - *Descripción*: `Formulario web`
+   - *Ejecutar como*: **Yo**
+   - *Quién tiene acceso*: **Cualquier usuario** ← imprescindible;
+     si no, la web no puede enviarle datos.
+4. **Implementar** y copia la **URL de la aplicación web**.
+   Termina en `/exec`.
+5. Compruébala: ábrela en el navegador. Debe mostrar
+   `{"ok":true,...,"estado":"activo"}`.
 
-Acepta los permisos y copia la URL que termina en `/exec`.
-Pégala en `endpointUrl` y pon `mode: 'endpoint'`.
+## Paso 5 — Conectar la web
+
+**Mándame la URL `/exec`** y la conecto y publico.
+
+O hazlo tú en `assets/js/site.js`, bloque `FORM_CONFIG`:
 
 ```js
 const FORM_CONFIG = {
   mode: 'endpoint',
-  googleFormId: '',
-  entries: { name: '', company: '', email: '', phone: '', need: '' },
+  ...
   endpointUrl: 'https://script.google.com/macros/s/AKfy.../exec'
 };
 ```
 
-> Cada vez que edites el script hay que **crear una implementación nueva**
-> (o "Gestionar implementaciones → Editar → Versión: Nueva"), o seguirá
-> corriendo la versión vieja.
+La URL `/exec` sí puede ir en la web: solo sirve para *enviar*
+solicitudes, no para leer la hoja.
 
-### B3. El bot de Telegram (el aviso al móvil)
+## Paso 6 — Prueba final
 
-1. En Telegram busca **@BotFather** → `/newbot` → dale un nombre.
-   Te devuelve un **token** como `7123456:AAH...`.
-2. Escríbele cualquier cosa a tu bot recién creado (un simple "hola").
-   Sin ese primer mensaje el bot no puede escribirte.
-3. Abre en el navegador:
-   `https://api.telegram.org/bot<TU_TOKEN>/getUpdates`
-   Busca `"chat":{"id":123456789` → ese número es tu **chat id**.
-4. Pega token y chat id en el script y vuelve a implementar.
-
-Ventaja de Telegram: el aviso llega al móvil al instante y **tu número
-nunca aparece en ningún sitio** — ni en la web, ni en el script.
+Entra a la página de contacto publicada, envía una solicitud de prueba y
+comprueba las dos cosas: la fila nueva en la hoja y el mensaje en
+Telegram.
 
 ---
 
-## Cuál elegir
+## Qué hace el script por ti
 
-| | Camino A (Forms) | Camino B (Apps Script) |
-|---|---|---|
-| Tiempo de montaje | ~15 min | ~25 min |
-| Coste | Gratis | Gratis |
-| Confirma que se guardó | No | **Sí** |
-| Aviso al móvil | Correo (Gmail) | **Telegram** o correo |
-| Los datos quedan en | Hoja de cálculo | Hoja de cálculo |
-| Campos nuevos | Hay que crear la pregunta y copiar su `entry.` | Se añaden solos a la hoja |
+| Protección | Qué evita |
+|---|---|
+| Guarda **antes** de avisar | Si Telegram falla, la solicitud no se pierde. La columna *Aviso Telegram* dice `FALLÓ` para que la revises |
+| Revalida los datos | Envíos directos a la URL saltándose la web |
+| Tope de **30 envíos por hora** | Que un robot te llene la hoja y el móvil. Ajustable en `MAX_POR_HORA` |
+| Neutraliza fórmulas | Que un texto como `=IMPORTXML(...)` se ejecute al abrir la hoja; y que `+57 300…` pierda el signo |
+| Recorta textos gigantes | Mensajes que Telegram rechazaría (límite 4096 caracteres) |
+| Bloqueo de escritura | Que dos envíos simultáneos se pisen |
 
-**Recomendación:** camino B. Cuesta diez minutos más y quita el único
-punto ciego del camino A.
+Además, la web lleva una trampa antispam invisible que descarta robots
+antes de llegar al script.
+
+## Herramientas del editor
+
+Desde el desplegable de funciones → ▶ Ejecutar:
+
+| Función | Para qué |
+|---|---|
+| `obtenerChatId` | Averiguar tu chat id |
+| `probarTelegram` | Mandar un mensaje de prueba al móvil |
+| `probarFormulario` | Simular un envío completo: fila en la hoja + Telegram |
+
+## Si algo falla
+
+| Síntoma | Causa probable |
+|---|---|
+| La web dice "No pudimos enviar tu solicitud" | *Quién tiene acceso* no está en **Cualquier usuario**, o la URL no termina en `/exec` |
+| Llega la fila pero no el Telegram | Token o chat id mal copiados. Ejecuta `probarTelegram` |
+| `obtenerChatId` dice que no hay mensajes | No le escribiste `hola` al bot |
+| Cambié el script y no se nota | Hay que publicar versión nueva: **Implementar → Gestionar implementaciones → ✏️ → Versión: Nueva versión → Implementar**. La URL no cambia |
+
+Para ver errores del lado de Google: en Apps Script, menú izquierdo
+**Ejecuciones**.
 
 ---
 
-## Tercera opción: n8n
+## Alternativas (por si algún día cambias)
 
-Si ya tienes n8n corriendo, es el camino más corto de todos y además
-la web se convierte en demostración de tu propio servicio:
+El formulario soporta otros destinos cambiando `mode` en `FORM_CONFIG`:
 
-1. Nodo **Webhook** (POST) → copia la URL de producción.
-2. Pégala en `endpointUrl` con `mode: 'endpoint'`.
-3. Encadena lo que quieras: Google Sheets, Telegram, correo, un nodo de
-   IA que redacte la primera respuesta…
+- **`'google-forms'`** — publica en un Formulario de Google. Más simple,
+  pero Google no deja que la web lea su respuesta: el envío llega sin
+  que la web pueda confirmarlo. Necesita `googleFormId` y un
+  `entry.XXXX` por pregunta en `entries`.
+- **`'endpoint'` hacia n8n** — un nodo *Webhook* (POST) con respuesta
+  `Access-Control-Allow-Origin: *`. Depende de que tu servidor n8n esté
+  en línea.
 
-El cuerpo llega como JSON con las claves
+El cuerpo que envía la web es JSON con las claves
 `name`, `company`, `email`, `phone`, `need`, `origen` y `fecha`.
-
-> El nodo Webhook debe responder con la cabecera
-> `Access-Control-Allow-Origin: *`, o el navegador bloqueará la respuesta.
-
----
-
-## Probarlo
-
-1. Sirve el sitio (`INICIAR_SERVIDOR.bat` o `python3 -m http.server 8000`).
-2. Abre `contacto.html`, rellena el formulario y envía.
-3. Comprueba: la fila en la hoja, y el aviso en el móvil.
-4. Si falla, abre la consola del navegador (**F12**): el error sale
-   marcado como `[formulario] fallo el envío`.
-
-## Antispam
-
-El formulario lleva un campo trampa invisible (`website`). Si un robot lo
-rellena, el envío se descarta en silencio, sin molestar a nadie con un
-captcha. Si aun así te llega spam, el siguiente paso sería añadir
-Cloudflare Turnstile, que también es gratis.
