@@ -44,16 +44,38 @@ Para cambiar la escena de una página basta con cambiar ese atributo.
 - Navegación por teclado, `aria-current`, enlace de salto al contenido,
   foco visible y errores de formulario con causa + solución.
 
-## Contacto configurado
+## Privacidad
 
-WhatsApp **+57 304 523 5480** (`wa.me/573045235480`) en los 5 HTML.
-Para cambiarlo: `sed -i 's/573045235480/57<nuevo>/g' *.html`
+El sitio **no publica ningún dato personal ni de contacto**: sin teléfono,
+sin correo, sin dirección ni ciudad. El único canal es el formulario de
+`contacto.html`, que capta los datos de quien está interesado
+(nombre, empresa, correo, teléfono opcional y necesidad).
+
+Si en el futuro quieres publicar un correo corporativo, añádelo en el pie
+(`foot-col` de "Contacto") de las 5 páginas.
+
+## Marca
+
+El logotipo vive en `assets/img/` y de ahí salen todos los tamaños:
+
+| Archivo               | Uso                                    |
+|-----------------------|----------------------------------------|
+| `logo.png`            | Barra de navegación y pie (transparente) |
+| `favicon.ico`         | Pestaña del navegador (16/32/48/64)    |
+| `favicon-32.png`      | Pestaña en pantallas modernas          |
+| `apple-touch-icon.png`| Icono al guardar en iOS (180px)        |
+| `icon-192/512.png`    | Icono de aplicación (`site.webmanifest`) |
+| `og.png`              | Miniatura al compartir el enlace (1200x630) |
+
+El acento del sitio (`--acc` en `assets/css/core.css`) es el lima
+**#c4f82a** del logotipo, para que marca y web usen el mismo verde.
+
+Para regenerar los iconos tras cambiar el logo, hay que reescalar
+`logo.png` a cada tamaño sobre el fondo `#050507`.
 
 ## Pendientes de configuración
 
-1. **Correo** — `contacto@spautomatizaciones.com` aparece en el pie y en
-   `contacto.html`; cámbialo si el dominio real es otro.
-2. **Formulario** — hoy simula el envío. En `assets/js/site.js`, dentro del
+1. **Formulario** — hoy simula el envío. En `assets/js/site.js`, dentro del
    handler `submit`, sustituye el `setTimeout` marcado con `TODO backend`
-   por un `fetch()` a tu endpoint (Formspree, n8n webhook, API propia…).
-3. **Imagen Open Graph** — añade `og:image` en el `<head>` cuando tengas el arte.
+   por un `fetch()` a tu endpoint (Formspree, webhook de n8n, API propia…).
+   Mientras no se conecte, **las solicitudes no llegan a ningún lado**.

@@ -28,9 +28,9 @@ function dotTexture() {
   return t;
 }
 
-const ACC  = new THREE.Color('#00e0a4');
-const ACC2 = new THREE.Color('#6e5bff');
-const ACC3 = new THREE.Color('#35d6ff');
+const ACC  = new THREE.Color('#c4f82a');   // lima del logotipo
+const ACC2 = new THREE.Color('#6e5bff');   // violeta de profundidad
+const ACC3 = new THREE.Color('#e9ff9c');   // lima pálido
 
 function boot(mount, kind) {
   const canvas = document.createElement('canvas');
