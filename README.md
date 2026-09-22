@@ -75,7 +75,10 @@ Para regenerar los iconos tras cambiar el logo, hay que reescalar
 
 ## Pendientes de configuración
 
-1. **Formulario** — hoy simula el envío. En `assets/js/site.js`, dentro del
-   handler `submit`, sustituye el `setTimeout` marcado con `TODO backend`
-   por un `fetch()` a tu endpoint (Formspree, webhook de n8n, API propia…).
-   Mientras no se conecte, **las solicitudes no llegan a ningún lado**.
+1. **Formulario** — el envío ya está implementado, pero arranca en modo
+   `demo`: muestra la confirmación sin mandar nada a ningún lado.
+   Para activarlo, edita `FORM_CONFIG` en `assets/js/site.js` siguiendo
+   **[INTEGRACIONES.md](INTEGRACIONES.md)**, que explica paso a paso las
+   tres opciones (Formulario de Google, Apps Script o webhook de n8n) y
+   cómo recibir el aviso en el móvil por Telegram o correo.
+   Mientras siga en `demo`, **las solicitudes no llegan a ningún lado**.

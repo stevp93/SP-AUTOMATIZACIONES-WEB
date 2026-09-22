@@ -179,7 +179,27 @@
     panel.style.height = '0px';
   });
 
-  /* ---------------- 9. Formulario de contacto --------------------------- */
+  /* ---------------- 9. Formulario de contacto ---------------------------
+     Configura el destino aquí. Ver INTEGRACIONES.md para el paso a paso.
+
+       mode: 'demo'          no envía nada, solo muestra la confirmación
+             'google-forms'  publica en un Formulario de Google
+             'endpoint'      publica JSON en tu propia URL
+                             (Apps Script, webhook de n8n, Formspree…)
+  ---------------------------------------------------------------------- */
+  const FORM_CONFIG = {
+    mode: 'demo',
+
+    // --- mode: 'google-forms' -------------------------------------------
+    // formId: el tramo que va entre /e/ y /viewform en el enlace del formulario
+    googleFormId: '',
+    // Un "entry.XXXXXXX" por campo (déjalo vacío si no creaste esa pregunta)
+    entries: { name: '', company: '', email: '', phone: '', need: '' },
+
+    // --- mode: 'endpoint' -----------------------------------------------
+    endpointUrl: ''
+  };
+
   const form = $('#contactForm');
   if (form) {
     const ok    = $('#formOk');
@@ -195,33 +215,77 @@
       if (field) field.focus();
     };
 
-    form.addEventListener('submit', (e) => {
+    /* Publica en un Formulario de Google.
+       Google no devuelve cabeceras CORS, así que la petición va en modo
+       'no-cors': el envío llega, pero el navegador NO nos deja leer la
+       respuesta. Por eso aquí no se puede distinguir un envío correcto de
+       un fallo del servidor; solo detectamos caídas de red. */
+    async function sendToGoogleForms(data) {
+      const body = new FormData();
+      Object.entries(FORM_CONFIG.entries).forEach(([campo, entry]) => {
+        if (entry && data[campo]) body.append(entry, data[campo]);
+      });
+      await fetch(`https://docs.google.com/forms/d/e/${FORM_CONFIG.googleFormId}/formResponse`, {
+        method: 'POST', mode: 'no-cors', body
+      });
+    }
+
+    /* Publica en una URL propia. Se envía como text/plain a propósito:
+       evita la petición previa de CORS (preflight), que Apps Script no
+       responde bien. En el servidor se lee el cuerpo y se interpreta JSON. */
+    async function sendToEndpoint(data) {
+      const res = await fetch(FORM_CONFIG.endpointUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify(data)
+      });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+    }
+
+    form.addEventListener('submit', async (e) => {
       e.preventDefault();
       errBx.style.display = 'none';
 
-      const name    = form.name.value.trim();
-      const company = form.company.value.trim();
-      const email   = form.email.value.trim();
-      const need    = form.need.value.trim();
+      // Trampa antispam: es invisible, así que solo un robot la rellena.
+      if (form.website && form.website.value) return;
 
-      if (!name)    return fail('Falta tu nombre — escríbelo para saber con quién hablamos.', form.name);
-      if (!company) return fail('Falta la empresa — indica el nombre de tu organización.', form.company);
-      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))
-                    return fail('Correo inválido — usa el formato nombre@empresa.com.', form.email);
-      if (need.length < 12)
-                    return fail('Cuéntanos un poco más (mínimo una frase) sobre lo que necesitas.', form.need);
+      const data = {
+        name:    form.name.value.trim(),
+        company: form.company.value.trim(),
+        email:   form.email.value.trim(),
+        phone:   form.phone ? form.phone.value.trim() : '',
+        need:    form.need.value.trim(),
+        origen:  location.pathname,
+        fecha:   new Date().toISOString()
+      };
+
+      if (!data.name)    return fail('Falta tu nombre — escríbelo para saber con quién hablamos.', form.name);
+      if (!data.company) return fail('Falta la empresa — indica el nombre de tu organización.', form.company);
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email))
+                         return fail('Correo inválido — usa el formato nombre@empresa.com.', form.email);
+      if (data.need.length < 12)
+                         return fail('Cuéntanos un poco más (mínimo una frase) sobre lo que necesitas.', form.need);
 
       const btn = $('.form-submit', form);
+      const etiqueta = btn.textContent;
       btn.disabled = true;
       btn.textContent = 'Enviando…';
-      dirty = false;
 
-      // TODO backend: reemplazar este setTimeout por un fetch() al endpoint real.
-      setTimeout(() => {
+      try {
+        if (FORM_CONFIG.mode === 'google-forms')  await sendToGoogleForms(data);
+        else if (FORM_CONFIG.mode === 'endpoint') await sendToEndpoint(data);
+        else await new Promise((r) => setTimeout(r, 900));   // modo demo
+
+        dirty = false;
         form.style.display = 'none';
         ok.style.display = 'grid';
         ok.focus?.();
-      }, 900);
+      } catch (err) {
+        console.error('[formulario] fallo el envío:', err);
+        btn.disabled = false;
+        btn.textContent = etiqueta;
+        fail('No pudimos enviar tu solicitud. Revisa tu conexión e inténtalo de nuevo.');
+      }
     });
   }
 

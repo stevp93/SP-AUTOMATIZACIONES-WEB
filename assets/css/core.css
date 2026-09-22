@@ -622,3 +622,12 @@ textarea.ctrl { resize: vertical; min-height: 128px; line-height: 1.6; }
   .reveal-words span > i { transform: none !important; opacity: 1 !important; }
   .cur, .cur-dot, .grain { display: none; }
 }
+
+/* ---------- 23. TRAMPA ANTISPAM (honeypot) ----------
+   Fuera de pantalla en vez de display:none — algunos robots ignoran los
+   campos ocultos, pero sí rellenan los que existen en el árbol. */
+.hp {
+  position: absolute !important;
+  left: -9999px; top: auto; width: 1px; height: 1px;
+  overflow: hidden; opacity: 0; pointer-events: none;
+}

@@ -113,6 +113,12 @@
 
             <div class="form-msg" id="formErr" role="alert" aria-live="assertive"></div>
 
+            <!-- Trampa antispam: invisible para las personas, tentadora para los robots -->
+            <div class="hp" aria-hidden="true">
+              <label for="website">No rellenes este campo</label>
+              <input type="text" id="website" name="website" tabindex="-1" autocomplete="off" />
+            </div>
+
             <div class="field">
               <label for="name">Nombre <em>*</em></label>
               <input class="ctrl" type="text" id="name" name="name" placeholder="Tu nombre completo…" autocomplete="name" required aria-required="true" />
