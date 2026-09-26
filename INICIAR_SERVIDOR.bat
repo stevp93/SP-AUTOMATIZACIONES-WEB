@@ -18,18 +18,20 @@ start "" "http://localhost:8000/index.html"
 
 echo.
 echo  Iniciando servidor Python en puerto 8000
+rem  Tipos MIME forzados: Windows a veces sirve .js como text/plain y el
+rem  navegador se niega a cargarlo como modulo (el 3D no apareceria).
 echo  (Ctrl+C para detener)
 echo.
 
 where python >nul 2>nul
 if %errorlevel%==0 (
-    python -m http.server 8000
+    python -c "import mimetypes,http.server as h; mimetypes.add_type('text/javascript','.js'); mimetypes.add_type('font/woff2','.woff2'); mimetypes.add_type('application/manifest+json','.webmanifest'); h.test(HandlerClass=h.SimpleHTTPRequestHandler, port=8000)"
     goto :eof
 )
 
 where py >nul 2>nul
 if %errorlevel%==0 (
-    py -m http.server 8000
+    py -c "import mimetypes,http.server as h; mimetypes.add_type('text/javascript','.js'); mimetypes.add_type('font/woff2','.woff2'); mimetypes.add_type('application/manifest+json','.webmanifest'); h.test(HandlerClass=h.SimpleHTTPRequestHandler, port=8000)"
     goto :eof
 )
 

@@ -26,23 +26,60 @@ Luego abre <http://localhost:8000/index.html>.
 
 ```
 assets/
-  css/core.css   design system completo (tokens, componentes, responsive)
-  js/scene.js    motor 3D: una escena por página, elegida con data-scene="…"
-  js/site.js     nav, cursor, reveals, tilt 3D, contadores, acordeón, formulario
+  css/core.css            design system completo (tokens, componentes, responsive)
+  js/scene.js             motor 3D: una escena por página, elegida con data-scene="…"
+  js/site.js              nav, cursor, reveals, tilt 3D, contadores, acordeón, formulario
+  vendor/three.module.min.js   Three.js r169 minificado (licencia MIT al lado)
+  fonts/*.woff2           Space Grotesk, Inter y JetBrains Mono (licencia OFL al lado)
 ```
 
 La escena se declara en el HTML con `<div class="stage-canvas" data-scene="core">`.
 Para cambiar la escena de una página basta con cambiar ese atributo.
 
-## Rendimiento y accesibilidad
+Todo se sirve desde el propio dominio: **cero peticiones a servidores externos**.
 
-- Three.js se carga por CDN mediante `importmap`; el `devicePixelRatio` se limita a 2.
-- El bucle de render se detiene cuando la sección sale de pantalla o la pestaña se oculta.
-- Si no hay WebGL, el CDN falla o el usuario tiene `prefers-reduced-motion`,
-  se usa automáticamente un fondo CSS animado (clase `.fallback`) y todas las
-  animaciones se desactivan.
+## Rendimiento
+
+Lighthouse, las 5 páginas (móvil con CPU ×4 y 4G lento simulados):
+
+| | Antes | Ahora |
+|---|---|---|
+| Rendimiento móvil | 47–50 | **99** |
+| Rendimiento escritorio | 59–68 | **100** |
+| LCP móvil | 5,2–5,6 s | **1,9–2,0 s** |
+| Bloqueo del hilo (TBT) móvil | 1,8–2,2 s | **0–50 ms** |
+| Accesibilidad / SEO | 92–95 / 92 | **100 / 100** |
+| Peso de la página | 440 KB | **185 KB** |
+
+Cómo se consigue sin renunciar al 3D:
+
+- **El 3D nunca retrasa el contenido.** `scene.js` no importa Three.js de forma
+  estática: espera a que la página cargue y el navegador quede libre, y solo
+  entonces lo descarga. El titular se anima con CSS puro (las palabras vienen
+  ya separadas en el HTML), sin esperar a ningún JavaScript.
+- **Sin bloqueos al arrancar.** Las fases (contexto WebGL, escena, shaders) van
+  en tareas separadas; los shaders se compilan en paralelo cuando el navegador
+  lo permite, o de a un material por tarea con el canvas aún invisible.
+- **Sin GPU no hay 3D.** Una sonda en un Web Worker pregunta al navegador si el
+  WebGL iría por software (`failIfMajorPerformanceCaveat`). Si es así, se usa el
+  fondo CSS y ni siquiera se descarga Three.js. Es lo que ven PageSpeed Insights
+  y los equipos sin aceleración gráfica.
+- **Móviles y tablets**: resolución limitada a 1,5×, ~45% menos partículas, el
+  canvas solo cubre la primera pantalla, encuadre de cámara adaptado a
+  pantallas verticales, y la cámara se mece sola (no hay ratón).
+- **Vigilante de fluidez**: si un teléfono no llega a ~30 fps, baja la
+  resolución; si aun así no llega, cede al fondo CSS.
+- El render se detiene fuera de pantalla, con la pestaña oculta o si el sistema
+  retira el contexto WebGL (se recupera solo al volver).
+
+Para ver el 3D en un equipo sin GPU (pruebas): añade `?3d=1` a la URL.
+
+## Accesibilidad
+
 - Navegación por teclado, `aria-current`, enlace de salto al contenido,
   foco visible y errores de formulario con causa + solución.
+- Contraste de todo el texto ≥ 4,5:1 (WCAG AA).
+- `prefers-reduced-motion`: sin 3D y sin animaciones.
 
 ## Privacidad
 

@@ -7,7 +7,7 @@
   <meta name="description" content="Integración de IA y agentes, automatización con n8n y MCP, desarrollo web profesional y consultoría de infraestructura digital para empresas en Colombia." />
   <meta name="theme-color" content="#050507" />
   <meta name="author" content="SP Automatizaciones" />
-  <link rel="canonical" href="./servicios.html" />
+  <link rel="canonical" href="https://sp-automatizaciones.site/servicios.html" />
 
   <!-- Open Graph -->
   <meta property="og:type" content="website" />
@@ -15,24 +15,25 @@
   <meta property="og:title" content="Servicios | SP Automatizaciones" />
   <meta property="og:description" content="Integración de IA y agentes, automatización con n8n y MCP, desarrollo web profesional y consultoría de infraestructura digital para empresas en Colombia." />
   <meta property="og:locale" content="es_CO" />
-  <meta property="og:image" content="./assets/img/og.png" />
+  <meta property="og:url" content="https://sp-automatizaciones.site/servicios.html" />
+  <meta property="og:image" content="https://sp-automatizaciones.site/assets/img/og.png" />
   <meta property="og:image:width" content="1200" />
   <meta property="og:image:height" content="630" />
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:image" content="./assets/img/og.png" />
+  <meta name="twitter:image" content="https://sp-automatizaciones.site/assets/img/og.png" />
 
   <link rel="icon" href="./assets/img/favicon.ico" sizes="any" />
   <link rel="icon" type="image/png" sizes="32x32" href="./assets/img/favicon-32.png" />
   <link rel="apple-touch-icon" href="./assets/img/apple-touch-icon.png" />
   <link rel="manifest" href="./site.webmanifest" />
 
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  <!-- Fuentes y 3D alojados en el propio sitio: sin servidores externos -->
+  <link rel="preload" href="./assets/fonts/space-grotesk.woff2" as="font" type="font/woff2" crossorigin />
+  <link rel="preload" href="./assets/fonts/inter.woff2" as="font" type="font/woff2" crossorigin />
   <link rel="stylesheet" href="./assets/css/core.css" />
 
   <script type="importmap">
-  { "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js" } }
+  { "imports": { "three": "./assets/vendor/three.module.min.js" } }
   </script>
 </head>
 <body>
@@ -72,9 +73,9 @@
       <div class="phead-grid">
         <div class="crumb"><a href="./index.html">Inicio</a><i>/</i><span>Servicios</span></div>
         <span class="label">Qué hacemos</span>
-        <h1 class="h-xl" data-words data-words-now>Cuatro frentes.<br />Un mismo objetivo.</h1>
-        <p class="lede rv" style="--d:420ms">Automatizamos procesos, integramos IA en tu operación y construimos las plataformas donde eso vive. Cada servicio se puede contratar solo o combinar en un proyecto completo.</p>
-        <div class="hero-actions rv" style="--d:520ms">
+        <h1 class="h-xl reveal-words"><span><i style="--d:0ms">Cuatro</i></span> <span><i style="--d:65ms">frentes.</i></span><br /><span><i style="--d:130ms">Un</i></span> <span><i style="--d:195ms">mismo</i></span> <span><i style="--d:260ms">objetivo.</i></span></h1>
+        <p class="lede rv-now" style="--d:420ms">Automatizamos procesos, integramos IA en tu operación y construimos las plataformas donde eso vive. Cada servicio se puede contratar solo o combinar en un proyecto completo.</p>
+        <div class="hero-actions rv-now" style="--d:520ms">
           <a class="btn" href="./contacto.html">Pedir diagnóstico</a>
           <a class="btn btn--ghost" href="#proceso">Ver cómo trabajamos</a>
         </div>
@@ -233,21 +234,21 @@
           <p class="foot-slogan">Automatizamos lo que frena tu empresa.</p>
         </div>
         <div class="foot-col">
-          <h4>Servicios</h4>
+          <h2>Servicios</h2>
           <a href="./servicios.html#ia">Integración de IA</a>
           <a href="./servicios.html#n8n">Automatización n8n</a>
           <a href="./servicios.html#web">Desarrollo web</a>
           <a href="./servicios.html#consultoria">Consultoría digital</a>
         </div>
         <div class="foot-col">
-          <h4>Empresa</h4>
+          <h2>Empresa</h2>
           <a href="./casos.html">Casos de éxito</a>
           <a href="./nosotros.html">Nosotros</a>
           <a href="./nosotros.html#proceso">Cómo trabajamos</a>
           <a href="./contacto.html">Contacto</a>
         </div>
         <div class="foot-col">
-          <h4>Contacto</h4>
+          <h2>Contacto</h2>
           <a href="./contacto.html">Solicitar diagnóstico</a>
           <a href="./contacto.html#formulario">Formulario de contacto</a>
           <span class="mono">Colombia · GMT-5</span>
@@ -261,15 +262,18 @@
     </div>
   </footer>
 
-  <script type="module" src="./assets/js/scene.js"></script>
+  <!-- site.js primero: los scripts diferidos y los módulos se ejecutan en
+       el orden del documento, y la interfaz no debe esperar al 3D. -->
   <script src="./assets/js/site.js" defer></script>
+  <script type="module" src="./assets/js/scene.js"></script>
   <script>
-    /* Red de seguridad: si el modulo 3D no alcanza a cargar (CDN bloqueado,
-       red lenta, WebGL no disponible), el fondo CSS animado toma su lugar. */
+    /* Red de seguridad: si el modulo 3D ni siquiera llego a ejecutarse
+       (navegador sin modulos ES, archivo bloqueado), el fondo CSS animado
+       toma su lugar. Los demas fallos los gestiona el propio scene.js. */
     addEventListener('load', function () {
       setTimeout(function () {
         document.querySelectorAll('[data-scene]').forEach(function (el) {
-          if (!el.querySelector('canvas')) el.classList.add('fallback');
+          if (!el.querySelector('canvas') && !el.dataset.state) el.classList.add('fallback');
         });
       }, 2500);
     });

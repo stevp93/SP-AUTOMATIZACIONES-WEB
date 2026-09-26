@@ -81,7 +81,7 @@
 
   /* ---------------- 4. Reveals al hacer scroll --------------------------- */
   idle(() => {
-    const items = $$('.rv, .rv-l, .rv-3d, [data-words]');
+    const items = $$('.rv, .rv-l, .rv-3d');
     if (!items.length) return;
     const io = new IntersectionObserver((entries) => {
       entries.forEach((en) => {
@@ -93,20 +93,9 @@
     items.forEach((el) => io.observe(el));
   });
 
-  /* ---------------- 5. Títulos con revelado palabra a palabra ------------ */
-  $$('[data-words]').forEach((el) => {
-    const html = el.innerHTML;
-    // conserva los <br> y las etiquetas de énfasis simples envolviendo palabras
-    const parts = html.split(/(\s+|<br\s*\/?>)/i);
-    let i = 0;
-    el.innerHTML = parts.map((p) => {
-      if (!p.trim() || /^<br/i.test(p)) return p;
-      const d = (i++) * 65;
-      return `<span><i style="--d:${d}ms">${p}</i></span>`;
-    }).join('');
-    el.classList.add('reveal-words');
-    if (el.hasAttribute('data-words-now')) requestAnimationFrame(() => el.classList.add('is-in'));
-  });
+  /* ---------------- 5. Titulares ------------------------------------------
+     Las palabras del titular vienen ya separadas en el HTML y se animan
+     solo con CSS: el texto principal (el LCP) ya no espera a JavaScript. */
 
   /* ---------------- 6. Tilt 3D + brillo que sigue al puntero ------------- */
   if (fine && !reduced) {
@@ -300,6 +289,13 @@
   const veil = $('.veil');
   if (veil) {
     requestAnimationFrame(() => { veil.classList.add('in'); });
+    // Al volver con "Atrás", Safari (iOS) y Chrome (Android) restauran la
+    // página desde su caché tal como quedó: con la cortina cerrada.
+    addEventListener('pageshow', (e) => {
+      if (!e.persisted) return;
+      veil.classList.remove('out');
+      veil.classList.add('in');
+    });
     if (!reduced) {
       document.addEventListener('click', (e) => {
         const a = e.target.closest('a[href]');
@@ -308,6 +304,11 @@
         if (!url || a.target === '_blank' || url.startsWith('#') ||
             url.startsWith('mailto:') || url.startsWith('tel:') || /^https?:/i.test(url)) return;
         if (e.metaKey || e.ctrlKey || e.shiftKey) return;
+        // Enlace a la misma página con ancla (./contacto.html#formulario estando
+        // en contacto): el navegador solo hace scroll, no recarga. Si se cerraba
+        // la cortina, la pantalla quedaba en negro.
+        const destino = new URL(url, location.href);
+        if (destino.pathname === location.pathname) return;
         e.preventDefault();
         veil.classList.remove('in');
         veil.classList.add('out');
